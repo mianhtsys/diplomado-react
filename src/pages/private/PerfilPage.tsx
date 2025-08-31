@@ -1,3 +1,4 @@
+//src/pages/private/PerfilPage.tsx
 import { Avatar, Box, Card, CardContent, Typography } from '@mui/material';
 import { useAuth } from '../../hooks';
 

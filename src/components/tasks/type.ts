@@ -1,3 +1,4 @@
+//src/components/tasks/type.ts
 export type TaskFilterDoneType = 'true' | 'false' | 'all';
 
 export type TaskType = {

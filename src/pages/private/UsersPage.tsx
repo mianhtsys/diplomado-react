@@ -1,26 +1,26 @@
-//src/pages/private/TasksPage.tsx
+// src/pages/private/UsersPage.tsx
 import { Box } from '@mui/material';
 import {
-  TaskDialog,
-  TaskFilter,
-  TaskHeader,
-  TaskTabla,
-  type TaskActionState,
-} from '../../components';
+  UserDialog,
+  UserFilter,
+  UserHeader,
+  UserTabla,
+  type UserActionState,
+} from '../../components/users';
 import { useEffect, useState } from 'react';
-import type { TaskFilterDoneType, TaskType } from '../../components/tasks/type';
+import type { UserFilterStatusType, UserType } from '../../components/users/type';
 import type { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 import { useAlert, useAxios } from '../../hooks';
 import { errorHelper, hanleZodError } from '../../helpers';
-import { schemaTask, type TaskFormValues } from '../../models';
+import { schemaUser, type UserFormValues } from '../../models';
 
-export const TasksPage = () => {
+export const UsersPage = () => {
   const { showAlert } = useAlert();
   const axios = useAxios();
 
-  const [filterStatus, setFilterStatus] = useState<TaskFilterDoneType>('all');
+  const [filterStatus, setFilterStatus] = useState<UserFilterStatusType>('all');
   const [search, setSearch] = useState('');
-  const [tasks, setTasks] = useState<TaskType[]>([]);
+  const [users, setUsers] = useState<UserType[]>([]);
   const [total, setTotal] = useState(0);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 1,
@@ -28,28 +28,28 @@ export const TasksPage = () => {
   });
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [task, setTask] = useState<TaskType | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
-    listTaskApi();
+    listUsersApi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filterStatus, paginationModel, sortModel]);
 
-  const listTaskApi = async () => {
+  const listUsersApi = async () => {
     try {
       const orderBy = sortModel[0]?.field;
       const orderDir = sortModel[0]?.sort;
-      const response = await axios.get('/tasks', {
+      const response = await axios.get('/users', {
         params: {
           page: paginationModel.page + 1,
           limit: paginationModel.pageSize,
           orderBy,
           orderDir,
           search,
-          done: filterStatus === 'all' ? undefined : filterStatus,
+          status: filterStatus === 'all' ? undefined : filterStatus,
         },
       });
-      setTasks(response.data.data);
+      setUsers(response.data.data);
       setTotal(response.data.total);
     } catch (error) {
       showAlert(errorHelper(error), 'error');
@@ -58,41 +58,43 @@ export const TasksPage = () => {
 
   const handleOpenCreateDialog = () => {
     setOpenDialog(true);
-    setTask(null);
+    setUser(null);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setTask(null);
+    setUser(null);
   };
 
-  const handleOpenEditDialog = (task: TaskType) => {
+  const handleOpenEditDialog = (user: UserType) => {
     setOpenDialog(true);
-    setTask(task);
+    setUser(user);
   };
 
   const handleCreateEdit = async (
-    _: TaskActionState | undefined,
-    formdata: FormData
+    _: UserActionState | undefined,
+    formData: FormData
   ) => {
     const rawData = {
-      name: formdata.get('name') as string,
+      username: formData.get('username') as string,
+      password: formData.get('password') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
     };
 
     try {
-      schemaTask.parse(rawData);
-      if (task?.id) {
-        await axios.put(`/tasks/${task.id}`, rawData);
-        showAlert('Tarea editada', 'success');
+      schemaUser.parse(rawData);
+      if (user?.id) {
+        await axios.put(`/users/${user.id}`, rawData);
+        showAlert('Usuario editado', 'success');
       } else {
-        await axios.post('/tasks', rawData);
-        showAlert('Tarea creada', 'success');
+        await axios.post('/users', rawData);
+        showAlert('Usuario creado', 'success');
       }
-      listTaskApi();
+      listUsersApi();
       handleCloseDialog();
       return;
     } catch (error) {
-      const err = hanleZodError<TaskFormValues>(error, rawData);
+      const err = hanleZodError<UserFormValues>(error, rawData);
       showAlert(err.message, 'error');
       return err;
     }
@@ -100,27 +102,27 @@ export const TasksPage = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      const confirmed = window.confirm('¿Estas seguro de eliminar?');
+      const confirmed = window.confirm('¿Estás seguro de eliminar este usuario?');
       if (!confirmed) return;
 
-      await axios.delete(`/tasks/${id}`);
-      showAlert('Tarea eliminada', 'success');
-      listTaskApi();
+      await axios.delete(`/users/${id}`);
+      showAlert('Usuario eliminado', 'success');
+      listUsersApi();
     } catch (error) {
       showAlert(errorHelper(error), 'error');
     }
   };
 
-  const handleDone = async (id: number, done: boolean) => {
+  const handleToggleStatus = async (id: number, status: 'active' | 'inactive') => {
     try {
       const confirmed = window.confirm(
-        '¿Estas seguro de que quieres cambiar el estado?'
+        `¿Estás seguro de que quieres ${status === 'active' ? 'desactivar' : 'activar'} este usuario?`
       );
       if (!confirmed) return;
 
-      await axios.patch(`/tasks/${id}`, { done: !done });
-      showAlert('Tarea modificada', 'success');
-      listTaskApi();
+      await axios.patch(`/users/${id}`, { status: status === 'active' ? 'inactive' : 'active' });
+      showAlert('Estado del usuario actualizado', 'success');
+      listUsersApi();
     } catch (error) {
       showAlert(errorHelper(error), 'error');
     }
@@ -128,36 +130,37 @@ export const TasksPage = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Header con titulo y boton agregar */}
-      <TaskHeader handleOpenCreateDialog={handleOpenCreateDialog} />
+      {/* Header */}
+      <UserHeader handleOpenCreateDialog={handleOpenCreateDialog} />
 
-      {/* Barra de herramientas con filtros y busquedas */}
-      <TaskFilter
+      {/* Filtros y búsqueda */}
+      <UserFilter
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
         setSearch={setSearch}
-      ></TaskFilter>
+      />
 
       {/* Tabla */}
-      <TaskTabla
-        tasks={tasks}
+      <UserTabla
+        users={users}
         rowCount={total}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
         sortModel={sortModel}
         setSortModel={setSortModel}
         handleDelete={handleDelete}
-        handleDone={handleDone}
+        handleToggleStatus={handleToggleStatus}
         handleOpenEditDialog={handleOpenEditDialog}
       />
 
       {/* Dialog */}
-      <TaskDialog
+      <UserDialog
         open={openDialog}
-        task={task}
+        user={user}
         onClose={handleCloseDialog}
         handleCreateEdit={handleCreateEdit}
       />
     </Box>
   );
 };
+

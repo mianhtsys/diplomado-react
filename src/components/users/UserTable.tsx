@@ -1,54 +1,54 @@
-//src/components/tasks/TaskTabla.tsx
+// src/components/users/UserTabla.tsx
 import {
   DataGrid,
   type GridColDef,
   type GridPaginationModel,
   type GridRenderCellParams,
 } from '@mui/x-data-grid';
-import type { TaskType } from './type';
+import type { UserType } from './type';
 import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import {
   Edit as EditIcon,
-  Undo as UndoIcon,
-  Done as DoneIcon,
   Delete as DeleteIcon,
+  ToggleOn as ActivateIcon,
+  ToggleOff as DeactivateIcon,
 } from '@mui/icons-material';
 import type { GridSortModel } from '@mui/x-data-grid';
 
 interface Props {
-  tasks: TaskType[];
+  users: UserType[];
   rowCount: number;
   paginationModel: GridPaginationModel;
   setPaginationModel: (model: GridPaginationModel) => void;
   sortModel: GridSortModel;
   setSortModel: (model: GridSortModel) => void;
   handleDelete: (id: number) => void;
-  handleDone: (id: number, done: boolean) => void;
-  handleOpenEditDialog: (task: TaskType) => void;
+  handleToggleStatus: (id: number, status: 'active' | 'inactive') => void;
+  handleOpenEditDialog: (user: UserType) => void;
 }
 
-export const TaskTabla = ({
-  tasks,
+export const UserTabla = ({
+  users,
   rowCount,
   paginationModel,
   setPaginationModel,
-  setSortModel,
   sortModel,
+  setSortModel,
   handleDelete,
-  handleDone: handledone,
-  handleOpenEditDialog
+  handleToggleStatus,
+  handleOpenEditDialog,
 }: Props) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Tarea', flex: 1 },
+    { field: 'username', headerName: 'Usuario', flex: 1 },
     {
-      field: 'done',
+      field: 'status',
       headerName: 'Estado',
       width: 150,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
-          label={params.value === true ? 'Hecho' : 'Pendiente'}
-          color={params.value === true ? 'success' : 'warning'}
+          label={params.value === 'active' ? 'Activo' : 'Inactivo'}
+          color={params.value === 'active' ? 'success' : 'warning'}
           size="small"
           variant="outlined"
         />
@@ -61,7 +61,7 @@ export const TaskTabla = ({
       filterable: false,
       width: 200,
       renderCell: (params: GridRenderCellParams) => (
-        <Stack direction={'row'} spacing={1}>
+        <Stack direction="row" spacing={1}>
           <Tooltip title="Editar">
             <IconButton size="small" onClick={() => handleOpenEditDialog(params.row)}>
               <EditIcon fontSize="small" />
@@ -69,29 +69,24 @@ export const TaskTabla = ({
           </Tooltip>
 
           <Tooltip
-            title={
-              params.row.done === true ? 'Marcar pendiente' : 'Marcar hecho'
-            }
+            title={params.row.status === 'active' ? 'Desactivar usuario' : 'Activar usuario'}
           >
             <IconButton
               size="small"
-              color={params.row.done === true ? 'warning' : 'success'}
-              onClick={() => handledone(params.row.id, params.row.done)}
+              //color={params.row.status === 'active' ? 'warning' : 'success'}
+              color={params.row.status === 'active' ? 'success' : 'warning'}
+              onClick={() => handleToggleStatus(params.row.id, params.row.status)}
             >
-              {params.row.done === true ? (
-                <UndoIcon fontSize="small" />
+              {params.row.status === 'active' ? (
+                <DeactivateIcon fontSize="small" />
               ) : (
-                <DoneIcon fontSize="small" />
+                <ActivateIcon fontSize="small" />
               )}
             </IconButton>
           </Tooltip>
 
           <Tooltip title="Eliminar">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={() => handleDelete(params.row.id)}
-            >
+            <IconButton size="small" color="error" onClick={() => handleDelete(params.row.id)}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -103,13 +98,13 @@ export const TaskTabla = ({
   return (
     <Box height={545}>
       <DataGrid
-        rows={tasks}
+        rows={users}
         columns={columns}
         rowCount={rowCount}
         paginationMode="server"
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        sortingMode={'server'}
+        sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={setSortModel}
         pageSizeOptions={[5, 10, 20]}
@@ -118,3 +113,5 @@ export const TaskTabla = ({
     </Box>
   );
 };
+
+

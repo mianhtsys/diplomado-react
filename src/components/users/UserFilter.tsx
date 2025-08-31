@@ -1,4 +1,4 @@
-//src/components/tasks/TaskFilter.tsx
+// src/components/users/UserFilter.tsx
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   FormControl,
@@ -11,18 +11,17 @@ import {
   TextField,
   Toolbar,
 } from '@mui/material';
-import type { TaskFilterDoneType } from './type';
+import type { UserFilterStatusType } from './type';
 import { useEffect, useState } from 'react';
-import { Search as SearchIcon } from '@mui/icons-material';
-import { Clear as ClearIcon } from '@mui/icons-material';
+import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 
 interface Props {
-  filterStatus: TaskFilterDoneType;
-  setFilterStatus: (status: TaskFilterDoneType) => void;
+  filterStatus: UserFilterStatusType;
+  setFilterStatus: (status: UserFilterStatusType) => void;
   setSearch: (search: string) => void;
 }
 
-export const TaskFilter = ({
+export const UserFilter = ({
   filterStatus,
   setFilterStatus,
   setSearch,
@@ -40,7 +39,7 @@ export const TaskFilter = ({
     <Paper elevation={1} sx={{ p: 2, mb: 3, borderRadius: 3 }}>
       <Toolbar sx={{ gap: 2, flexWrap: 'wrap' }}>
         <TextField
-          placeholder="Buscar tarea..."
+          placeholder="Buscar usuario..."
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
           size="small"
@@ -66,11 +65,11 @@ export const TaskFilter = ({
           <Select
             value={filterStatus}
             label="Estado"
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => setFilterStatus(e.target.value as UserFilterStatusType)}
           >
-            <MenuItem value="all">Todas</MenuItem>
-            <MenuItem value="true">Completadas</MenuItem>
-            <MenuItem value="false">Pendientes</MenuItem>
+            <MenuItem value="all">Todos</MenuItem>
+            <MenuItem value="active">Activos</MenuItem>
+            <MenuItem value="inactive">Inactivos</MenuItem>
           </Select>
         </FormControl>
       </Toolbar>
